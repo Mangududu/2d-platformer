@@ -1,9 +1,9 @@
 # main.py
-from settings import * 
+from settings import *
 from level import Level
 from pytmx.util_pygame import load_pygame
 from os.path import join
-from support import * 
+from support import *
 from data import Data
 from debug import debug
 from ui import UI
@@ -46,7 +46,7 @@ class Game:
                 self.data,
                 self.switch_stage
             )
-        else: # overworld 
+        else:  # overworld
             if unlock > 0:
                 self.data.unlocked_level = 6
             else:
@@ -96,7 +96,7 @@ class Game:
         }
         self.font = pygame.font.Font(join('.', 'graphics', 'ui', 'runescape_uf.ttf'), 40)
         self.ui_frames = {
-            'heart': import_folder('.', 'graphics', 'ui', 'heart'), 
+            'heart': import_folder('.', 'graphics', 'ui', 'heart'),
             'coin':  import_image('.', 'graphics', 'ui', 'coin')
         }
         self.overworld_frames = {
@@ -109,7 +109,7 @@ class Game:
         self.audio_files = {
             'coin':   pygame.mixer.Sound(join('audio', 'coin.wav')),
             'attack': pygame.mixer.Sound(join('audio', 'attack.wav')),
-            'jump':   pygame.mixer.Sound(join('audio', 'jump.wav')), 
+            'jump':   pygame.mixer.Sound(join('audio', 'jump.wav')),
             'damage': pygame.mixer.Sound(join('audio', 'damage.wav')),
             'pearl':  pygame.mixer.Sound(join('audio', 'pearl.wav')),
         }
@@ -117,9 +117,33 @@ class Game:
         self.bg_music.set_volume(0.5)
 
     def check_game_over(self):
+        # Sjekk om helsen er 0 eller mindre
         if self.data.health <= 0:
-            pygame.quit()
-            sys.exit()
+            self.game_over_screen()
+
+    def game_over_screen(self):
+        # Enkel game over-skjerm
+        font_go = pygame.font.Font(None, 100)  # eller bruk self.font om du vil
+        text_surf = font_go.render("GAME OVER", True, (255, 0, 0))
+        text_rect = text_surf.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2))
+
+        while True:
+            # Håndter events
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                # Om du ønsker at spilleren kan trykke en tast for å lukke
+                if event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
+                    pygame.quit()
+                    sys.exit()
+
+            # Fyll skjerm og tegn 'GAME OVER'
+            self.display_surface.fill((0, 0, 0))
+            self.display_surface.blit(text_surf, text_rect)
+
+            pygame.display.update()
+            self.clock.tick(60)
 
     def run(self):
         while True:
@@ -132,9 +156,10 @@ class Game:
             self.check_game_over()
             self.current_stage.run(dt)
             self.ui.update(dt)
-            
+
             pygame.display.update()
 
 if __name__ == '__main__':
     game = Game()
     game.run()
+
